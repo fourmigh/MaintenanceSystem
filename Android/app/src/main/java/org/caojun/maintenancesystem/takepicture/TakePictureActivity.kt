@@ -1,7 +1,9 @@
 package org.caojun.maintenancesystem.takepicture
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -17,6 +19,7 @@ import androidx.core.content.FileProvider
 import org.caojun.maintenancesystem.R
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
@@ -73,42 +76,52 @@ class TakePictureActivity : ComponentActivity() {
         }
 
         if (allPermissionsGranted) {
-            dispatchTakePictureIntent()
+            openCamera()
         } else {
             ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE)
         }
     }
 
-    private fun dispatchTakePictureIntent() {
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-            takePictureIntent.resolveActivity(packageManager)?.also {
-                val photoFile: File? = try {
-                    createImageFile()
-                } catch (ex: Exception) {
-                    null
-                }
-                photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        this,
-                        "${packageName}.fileprovider",
-                        it
-                    )
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-                }
-            }
+    private fun openCamera() {
+        // 1. 检查设备是否有可用的相机应用
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        // 2. 创建临时文件存储照片
+        val photoFile: File? = try {
+            createImageFile() // 自定义方法，创建图片文件
+        } catch (ex: Exception) {
+            Toast.makeText(this, "创建照片文件失败: ${ex.message}", Toast.LENGTH_LONG).show()
+            null
         }
+        if (photoFile == null) return
+
+        // 3. 生成 FileProvider URI
+        val photoUri = FileProvider.getUriForFile(
+            this,
+            "${packageName}.fileprovider",
+            photoFile
+        )
+
+        // 4. 设置 Intent 并启动相机（弹出选择器）
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+        takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        val chooserIntent = Intent.createChooser(takePictureIntent, "选择相机应用")
+        startActivityForResult(chooserIntent, REQUEST_IMAGE_CAPTURE)
     }
 
-    @Throws(Exception::class)
+    /**
+     * 创建图片文件
+     */
     private fun createImageFile(): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(
             "JPEG_${timeStamp}_",
             ".jpg",
             storageDir
         ).apply {
+            // 保存文件路径供后续使用（可选）
             currentPhotoPath = absolutePath
         }
     }
@@ -226,6 +239,7 @@ class TakePictureActivity : ComponentActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -234,7 +248,7 @@ class TakePictureActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSION_CODE) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                dispatchTakePictureIntent()
+                openCamera()
             } else {
                 Toast.makeText(this, "需要权限才能拍照", Toast.LENGTH_SHORT).show()
             }

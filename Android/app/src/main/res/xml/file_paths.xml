@@ -7,4 +7,7 @@
     <external-path
         name="external_pictures"
         path="Pictures" />
+
+    <!-- 鸿蒙可能需要额外路径 -->
+    <root-path name="root" path="." />
 </paths>
