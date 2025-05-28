@@ -1,28 +1,22 @@
 package org.caojun.maintenancesystem.takepicture
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.*
 import androidx.activity.ComponentActivity
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import org.caojun.maintenancesystem.R
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.max
 
 class TakePictureActivity : ComponentActivity() {
 
@@ -35,9 +29,29 @@ class TakePictureActivity : ComponentActivity() {
     private var originalBitmap: Bitmap? = null
     private var watermarkedBitmap: Bitmap? = null
 
-    companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
-        private const val REQUEST_PERMISSION_CODE = 2
+    // 1. 替换 startActivityForResult
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            currentPhotoPath?.let { path ->
+                originalBitmap = BitmapFactory.decodeFile(path)
+                originalBitmap?.let {
+                    addWatermarkToBitmap(it)
+                }
+            }
+        }
+    }
+
+    // 2. 替换权限请求
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            openCamera()
+        } else {
+            Toast.makeText(this, "需要相机权限才能拍照", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,54 +79,40 @@ class TakePictureActivity : ComponentActivity() {
     }
 
     private fun checkPermissionsAndTakePhoto() {
-        val permissions = arrayOf(
-            Manifest.permission.CAMERA,
-//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-
-        val allPermissionsGranted = permissions.all {
-            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
-
-        if (allPermissionsGranted) {
-            openCamera()
-        } else {
-            ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE)
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                openCamera()
+            }
+            else -> {
+                // 3. 直接启动权限请求（无需重写 onRequestPermissionsResult）
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
         }
     }
 
     private fun openCamera() {
-        // 1. 检查设备是否有可用的相机应用
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
-        // 2. 创建临时文件存储照片
         val photoFile: File? = try {
-            createImageFile() // 自定义方法，创建图片文件
+            createImageFile()
         } catch (ex: Exception) {
             Toast.makeText(this, "创建照片文件失败: ${ex.message}", Toast.LENGTH_LONG).show()
             null
         }
-        if (photoFile == null) return
-
-        // 3. 生成 FileProvider URI
-        val photoUri = FileProvider.getUriForFile(
-            this,
-            "${packageName}.fileprovider",
-            photoFile
-        )
-
-        // 4. 设置 Intent 并启动相机（弹出选择器）
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-        takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-        val chooserIntent = Intent.createChooser(takePictureIntent, "选择相机应用")
-        startActivityForResult(chooserIntent, REQUEST_IMAGE_CAPTURE)
+        photoFile?.let { file ->
+            val photoUri = FileProvider.getUriForFile(
+                this,
+                "${packageName}.fileprovider",
+                file
+            )
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+            takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            takePictureLauncher.launch(takePictureIntent)
+        }
     }
 
-    /**
-     * 创建图片文件
-     */
     private fun createImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
@@ -121,20 +121,7 @@ class TakePictureActivity : ComponentActivity() {
             ".jpg",
             storageDir
         ).apply {
-            // 保存文件路径供后续使用（可选）
             currentPhotoPath = absolutePath
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            currentPhotoPath?.let { path ->
-                originalBitmap = BitmapFactory.decodeFile(path)
-                originalBitmap?.let {
-                    addWatermarkToBitmap(it)
-                }
-            }
         }
     }
 
@@ -162,7 +149,7 @@ class TakePictureActivity : ComponentActivity() {
         val lineSpacing = 10f // 行间距
         val spacing = 20f
         // 确定两行文本的最大宽度
-        val maxTextWidth = max(dateWidth, timeWidth)
+        val maxTextWidth = dateWidth.coerceAtLeast(timeWidth)
 
         when (rgWatermarkPosition.checkedRadioButtonId) {
             // 左上角 - 左对齐
@@ -236,22 +223,6 @@ class TakePictureActivity : ComponentActivity() {
             }
         } ?: run {
             Toast.makeText(this, "请先拍照并添加水印", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_PERMISSION_CODE) {
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                openCamera()
-            } else {
-                Toast.makeText(this, "需要权限才能拍照", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 
