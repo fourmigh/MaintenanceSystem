@@ -63,4 +63,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="保存图片" />
+
+    <Button
+        android:id="@+id/btnWatermark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="设置水印" />
 </LinearLayout>

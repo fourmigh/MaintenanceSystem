@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import org.caojun.maintenancesystem.R
+import org.caojun.maintenancesystem.watermar.WatermarkGeneratorActivity
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -24,6 +25,7 @@ class TakePictureActivity : ComponentActivity() {
     private lateinit var btnTakePhoto: Button
     private lateinit var btnSave: Button
     private lateinit var rgWatermarkPosition: RadioGroup
+    private lateinit var btnWatermark: Button
 
     private var currentPhotoPath: String? = null
     private var originalBitmap: Bitmap? = null
@@ -62,6 +64,7 @@ class TakePictureActivity : ComponentActivity() {
         btnTakePhoto = findViewById(R.id.btnTakePhoto)
         btnSave = findViewById(R.id.btnSave)
         rgWatermarkPosition = findViewById(R.id.rgWatermarkPosition)
+        btnWatermark = findViewById(R.id.btnWatermark)
 
         btnTakePhoto.setOnClickListener {
             checkPermissionsAndTakePhoto()
@@ -69,6 +72,10 @@ class TakePictureActivity : ComponentActivity() {
 
         btnSave.setOnClickListener {
             saveWatermarkedImage()
+        }
+
+        btnWatermark.setOnClickListener {
+            startActivity(Intent(this, WatermarkGeneratorActivity::class.java))
         }
 
         rgWatermarkPosition.setOnCheckedChangeListener { _, checkedId ->

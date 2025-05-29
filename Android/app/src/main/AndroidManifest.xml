@@ -42,6 +42,7 @@
         </activity>
 
         <activity android:name=".takepicture.TakePictureActivity"/>
+        <activity android:name=".watermar.WatermarkGeneratorActivity"/>
     </application>
 
 </manifest>
