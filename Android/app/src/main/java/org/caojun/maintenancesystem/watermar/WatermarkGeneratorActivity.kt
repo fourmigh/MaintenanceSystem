@@ -60,10 +60,21 @@ class WatermarkGeneratorActivity : ComponentActivity() {
                 editText?.setText(location?.lat.toString())
 
                 editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_ADDRESS]
-                editText?.setText("${location?.regionName} ${location?.city}")
+                val text = "${location?.regionName} ${location?.city}"
+                editText?.setText(text)
 
                 editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_WEATHER]
-//                editText?.setText()
+                val sb = StringBuilder()
+                if (weatherCode != null) {
+                    sb.append("${weatherCode.description} ${weatherCode.icon} ")
+                }
+                if (weather != null && units != null) {
+                    sb.append("${weather.temperature} ${units.temperature} ")
+                }
+                if (wind != null) {
+                    sb.append("${wind.fullName} (${wind.emoji})")
+                }
+                editText?.setText(sb.toString())
             }
 
         })

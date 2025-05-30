@@ -12,7 +12,7 @@ enum class WeatherCode(
     val isSevere: Boolean = false
 ) {
     CLEAR_SKY(0, "晴天", "☀️"),
-    MAINLY_CLEAR(1, "晴间多云", "🌤"),
+    MAINLY_CLEAR(1, "晴转多云", "🌤"),
     PARTLY_CLOUDY(2, "部分多云", "⛅"),
     OVERCAST(3, "多云", "☁️"),
     FOG(45, "雾", "🌫"),
