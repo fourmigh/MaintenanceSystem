@@ -11,7 +11,7 @@ enum class WatermarkTemplate {
     // 占位符定义
     PLACEHOLDER_DATE_TIME {
         override val placeholder: String = "yyyy-MM-dd HH:mm"
-        override val description: String = "日期时间"
+        override val description: String = "时间"
     },
     PLACEHOLDER_LONGITUDE {
         override val placeholder: String = "#longitude#"
@@ -27,7 +27,7 @@ enum class WatermarkTemplate {
     },
     PLACEHOLDER_WEATHER {
         override val placeholder: String = "#weather#"
-        override val description: String = "天气信息"
+        override val description: String = "天气"
     };
 
     // 抽象属性

@@ -137,8 +137,15 @@ class WatermarkGeneratorActivity : ComponentActivity() {
         // 构建水印文本
         val watermarkBuilder = StringBuilder()
 
+        val sortedMap = LinkedHashMap<WatermarkTemplate, String>().apply {
+            WatermarkTemplate.entries.forEach { template ->
+                watermarkTemplateValues[template]?.let { value ->
+                    put(template, value)
+                }
+            }
+        }
         // 添加用户选择的水印元素
-        watermarkTemplateValues.forEach { (watermarkTemplate, value) ->
+        sortedMap.forEach { (watermarkTemplate, value) ->
             watermarkBuilder.append("${watermarkTemplate.description}: $value\n")
         }
 

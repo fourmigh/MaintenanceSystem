@@ -13,7 +13,7 @@ enum class WeatherCode(
 ) {
     CLEAR_SKY(0, "晴天", "☀️"),
     MAINLY_CLEAR(1, "晴转多云", "🌤"),
-    PARTLY_CLOUDY(2, "部分多云", "⛅"),
+    PARTLY_CLOUDY(2, "局部多云", "⛅"),
     OVERCAST(3, "多云", "☁️"),
     FOG(45, "雾", "🌫"),
     DEPOSITING_RIME_FOG(48, "冻雾", "❄️🌫"),
