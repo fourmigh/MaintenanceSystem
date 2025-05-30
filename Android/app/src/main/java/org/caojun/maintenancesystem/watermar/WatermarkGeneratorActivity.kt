@@ -1,5 +1,6 @@
 package org.caojun.maintenancesystem.watermar
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
@@ -7,6 +8,11 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import org.caojun.library.nettools.ip.IpLocationResponse
+import org.caojun.library.nettools.weather.CurrentWeather
+import org.caojun.library.nettools.weather.CurrentWeatherUnits
+import org.caojun.library.nettools.weather.WeatherCode
+import org.caojun.library.nettools.weather.WindDirection
 import org.caojun.maintenancesystem.R
 
 class WatermarkGeneratorActivity : ComponentActivity() {
@@ -37,6 +43,30 @@ class WatermarkGeneratorActivity : ComponentActivity() {
         generateButton.setOnClickListener {
             generateWatermark()
         }
+
+        WatermarkHelper.get(this, object : WatermarkHelper.Listener {
+            @SuppressLint("SetTextI18n")
+            override fun onResult(
+                location: IpLocationResponse?,
+                weather: CurrentWeather?,
+                units: CurrentWeatherUnits?,
+                weatherCode: WeatherCode?,
+                wind: WindDirection?
+            ) {
+                var editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_LONGITUDE]
+                editText?.setText(location?.lon.toString())
+
+                editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_LATITUDE]
+                editText?.setText(location?.lat.toString())
+
+                editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_ADDRESS]
+                editText?.setText("${location?.regionName} ${location?.city}")
+
+                editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_WEATHER]
+//                editText?.setText()
+            }
+
+        })
     }
 
     private fun setupWatermarkOptions() {

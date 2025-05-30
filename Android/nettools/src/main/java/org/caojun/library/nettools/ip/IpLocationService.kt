@@ -19,16 +19,26 @@ class IpLocationService {
     /**
      * 获取当前IP的位置信息
      */
-    suspend fun getCurrentLocation(): IpLocationResponse {
-        return api.getLocation()
+    suspend fun getCurrentLocation(): IpLocationResponse? {
+        return try {
+            api.getLocation()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     /**
      * 获取指定IP的位置信息
      * @param ip 要查询的IP地址
      */
-    suspend fun getLocationByIp(ip: String): IpLocationResponse {
-        return api.getLocation(ip)
+    suspend fun getLocationByIp(ip: String): IpLocationResponse? {
+        return try {
+            api.getLocation(ip)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     /**

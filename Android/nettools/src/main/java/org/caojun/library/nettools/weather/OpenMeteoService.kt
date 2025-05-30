@@ -11,12 +11,17 @@ class OpenMeteoService {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    suspend fun getCurrentWeather(lat: Double, lon: Double): OpenMeteoResponse {
-        return retrofit.create(OpenMeteoApi::class.java)
-            .getWeather(
-                latitude = lat,
-                longitude = lon
-            )
+    suspend fun getCurrentWeather(lat: Double, lon: Double): OpenMeteoResponse? {
+        return try {
+            retrofit.create(OpenMeteoApi::class.java)
+                .getWeather(
+                    latitude = lat,
+                    longitude = lon
+                )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     interface OpenMeteoApi {
