@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'org.caojun.library.nettools'
+    namespace 'org.caojun.library.database'
     compileSdk 34
 
     defaultConfig {
@@ -31,8 +31,5 @@ android {
 
 dependencies {
 
-    implementation libs.retrofit
-    implementation libs.retrofit2.converter.gson
-    implementation libs.kotlinx.coroutines.android
-    api project(':database')
+    api libs.gson
 }

@@ -11,7 +11,7 @@ class WatermarkDrawer {
 
     init {
         paint.isAntiAlias = true
-        paint.textSize = 36f // 默认文字大小
+        paint.textSize = 96f // 默认文字大小
         paint.color = -0x55000001 // 默认半透明白色
     }
 

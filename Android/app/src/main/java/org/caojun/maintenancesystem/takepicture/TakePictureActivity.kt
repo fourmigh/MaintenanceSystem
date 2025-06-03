@@ -13,7 +13,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import org.caojun.maintenancesystem.R
+import org.caojun.maintenancesystem.watermar.WatermarkDrawer
+import org.caojun.maintenancesystem.watermar.WatermarkDrawer.WatermarkPosition
 import org.caojun.maintenancesystem.watermar.WatermarkGeneratorActivity
+import org.caojun.maintenancesystem.watermar.WatermarkHelper
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -85,6 +88,21 @@ class TakePictureActivity : ComponentActivity() {
         }
     }
 
+    private var watermark = ""
+    override fun onResume() {
+        super.onResume()
+        loadWatermark()
+    }
+
+    private fun loadWatermark() {
+        WatermarkHelper.load(this, this, object : WatermarkHelper.LoadListener {
+            override fun onReset(watermark: String) {
+                this@TakePictureActivity.watermark = watermark
+            }
+
+        })
+    }
+
     private fun checkPermissionsAndTakePhoto() {
         when {
             ContextCompat.checkSelfPermission(
@@ -133,68 +151,94 @@ class TakePictureActivity : ComponentActivity() {
     }
 
     private fun addWatermarkToBitmap(originalBitmap: Bitmap) {
-        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
-        val width = originalBitmap.width
-        val height = originalBitmap.height
+        loadWatermark()
+
+//        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+//        val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+//
+//        val width = originalBitmap.width
+//        val height = originalBitmap.height
 
         val mutableBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(mutableBitmap)
 
-        val paint = Paint().apply {
-            color = Color.WHITE
-            textSize = 256f
-            isAntiAlias = true
-            style = Paint.Style.FILL
-            setShadowLayer(5f, 0f, 0f, Color.BLACK)
-        }
+//        val paint = Paint().apply {
+//            color = Color.WHITE
+//            textSize = 256f
+//            isAntiAlias = true
+//            style = Paint.Style.FILL
+//            setShadowLayer(5f, 0f, 0f, Color.BLACK)
+//        }
 
-        val dateWidth = paint.measureText(currentDate)
-        val timeWidth = paint.measureText(currentTime)
-        val textHeight = paint.descent() - paint.ascent()
-        val lineSpacing = 10f // 行间距
-        val spacing = 20f
+//        val dateWidth = paint.measureText(currentDate)
+//        val timeWidth = paint.measureText(currentTime)
+//        val textHeight = paint.descent() - paint.ascent()
+//        val lineSpacing = 10f // 行间距
+//        val spacing = 20f
         // 确定两行文本的最大宽度
-        val maxTextWidth = dateWidth.coerceAtLeast(timeWidth)
+//        val maxTextWidth = dateWidth.coerceAtLeast(timeWidth)
 
-        when (rgWatermarkPosition.checkedRadioButtonId) {
+        val position =  when (rgWatermarkPosition.checkedRadioButtonId) {
             // 左上角 - 左对齐
             R.id.rbTopLeft -> {
-                val x = spacing
-                val y = textHeight + spacing
-                canvas.drawText(currentDate, x, y, paint)
-                canvas.drawText(currentTime, x, y + textHeight + lineSpacing, paint)
+                WatermarkPosition.TOP_LEFT
             }
 
             // 右上角 - 右对齐
             R.id.rbTopRight -> {
-                paint.textAlign = Paint.Align.RIGHT
-                val x = width - spacing
-                val y = textHeight + spacing
-                canvas.drawText(currentDate, x, y, paint)
-                canvas.drawText(currentTime, x, y + textHeight + lineSpacing, paint)
-                paint.textAlign = Paint.Align.LEFT // 恢复默认对齐方式
+                WatermarkPosition.TOP_RIGHT
             }
 
             // 左下角 - 左对齐
             R.id.rbBottomLeft -> {
-                val x = spacing
-                val y = height - spacing - lineSpacing
-                canvas.drawText(currentTime, x, y, paint)
-                canvas.drawText(currentDate, x, y - textHeight, paint)
+                WatermarkPosition.BOTTOM_LEFT
             }
 
             // 右下角 - 右对齐
             else -> {
-                paint.textAlign = Paint.Align.RIGHT
-                val x = width - spacing
-                val y = height - spacing - lineSpacing
-                canvas.drawText(currentTime, x, y, paint)
-                canvas.drawText(currentDate, x, y - textHeight, paint)
-                paint.textAlign = Paint.Align.LEFT // 恢复默认对齐方式
+                WatermarkPosition.BOTTOM_RIGHT
             }
         }
+        val watermarkDrawer = WatermarkDrawer()
+        watermarkDrawer.drawWatermark(canvas, watermark, position)
+//        when (rgWatermarkPosition.checkedRadioButtonId) {
+//            // 左上角 - 左对齐
+//            R.id.rbTopLeft -> {
+//                val x = spacing
+//                val y = textHeight + spacing
+//                canvas.drawText(currentDate, x, y, paint)
+//                canvas.drawText(currentTime, x, y + textHeight + lineSpacing, paint)
+//            }
+//
+//            // 右上角 - 右对齐
+//            R.id.rbTopRight -> {
+//                paint.textAlign = Paint.Align.RIGHT
+//                val x = width - spacing
+//                val y = textHeight + spacing
+//                canvas.drawText(currentDate, x, y, paint)
+//                canvas.drawText(currentTime, x, y + textHeight + lineSpacing, paint)
+//                paint.textAlign = Paint.Align.LEFT // 恢复默认对齐方式
+//            }
+//
+//            // 左下角 - 左对齐
+//            R.id.rbBottomLeft -> {
+//                val x = spacing
+//                val y = height - spacing - lineSpacing
+//                canvas.drawText(currentTime, x, y, paint)
+//                canvas.drawText(currentDate, x, y - textHeight, paint)
+//            }
+//
+//            // 右下角 - 右对齐
+//            else -> {
+//                paint.textAlign = Paint.Align.RIGHT
+//                val x = width - spacing
+//                val y = height - spacing - lineSpacing
+//                canvas.drawText(currentTime, x, y, paint)
+//                canvas.drawText(currentDate, x, y - textHeight, paint)
+//                paint.textAlign = Paint.Align.LEFT // 恢复默认对齐方式
+//            }
+//        }
 
         watermarkedBitmap = mutableBitmap
         ivPreview.setImageBitmap(mutableBitmap)

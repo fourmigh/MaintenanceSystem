@@ -44,7 +44,7 @@ class WatermarkGeneratorActivity : ComponentActivity() {
             generateWatermark()
         }
 
-        WatermarkHelper.get(this, object : WatermarkHelper.Listener {
+        WatermarkHelper.get(this, this, object : WatermarkHelper.GetListener {
             @SuppressLint("SetTextI18n")
             override fun onResult(
                 location: IpLocationResponse?,
@@ -54,31 +54,22 @@ class WatermarkGeneratorActivity : ComponentActivity() {
                 wind: WindDirection?
             ) {
                 var editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_LONGITUDE]
-                editText?.setText(location?.lon.toString())
+                editText?.setText(WatermarkHelper.translate(WatermarkTemplate.PLACEHOLDER_LONGITUDE, location, weather, units, weatherCode, wind))
 
                 editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_LATITUDE]
-                editText?.setText(location?.lat.toString())
+                editText?.setText(WatermarkHelper.translate(WatermarkTemplate.PLACEHOLDER_LATITUDE, location, weather, units, weatherCode, wind))
 
                 editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_ADDRESS]
-                val text = "${location?.regionName} ${location?.city}"
-                editText?.setText(text)
+                editText?.setText(WatermarkHelper.translate(WatermarkTemplate.PLACEHOLDER_ADDRESS, location, weather, units, weatherCode, wind))
 
                 editText = watermarkTemplateEditText[WatermarkTemplate.PLACEHOLDER_WEATHER]
-                val sb = StringBuilder()
-                if (weatherCode != null) {
-                    sb.append("${weatherCode.description} ${weatherCode.icon} ")
-                }
-                if (weather != null && units != null) {
-                    sb.append("${weather.temperature} ${units.temperature} ")
-                }
-                if (wind != null) {
-                    sb.append("${wind.fullName} (${wind.emoji})")
-                }
-                editText?.setText(sb.toString())
+                editText?.setText(WatermarkHelper.translate(WatermarkTemplate.PLACEHOLDER_WEATHER, location, weather, units, weatherCode, wind))
             }
 
         })
     }
+
+
 
     private fun setupWatermarkOptions() {
         // 获取所有占位符
@@ -144,10 +135,13 @@ class WatermarkGeneratorActivity : ComponentActivity() {
                 }
             }
         }
+        val list = ArrayList<WatermarkTemplate>()
         // 添加用户选择的水印元素
         sortedMap.forEach { (watermarkTemplate, value) ->
+            list.add(watermarkTemplate)
             watermarkBuilder.append("${watermarkTemplate.description}: $value\n")
         }
+        WatermarkHelper.save(this, this, list)
 
         // 添加自定义文本
         if (customText.isNotEmpty()) {
