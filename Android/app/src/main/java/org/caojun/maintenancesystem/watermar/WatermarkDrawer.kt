@@ -30,6 +30,9 @@ class WatermarkDrawer {
     fun setTextSize(size: Float) {
         paint.textSize = size
     }
+    fun getTextSize(): Float {
+        return paint.textSize
+    }
 
     /**
      * 设置水印与边缘的间距
@@ -64,7 +67,7 @@ class WatermarkDrawer {
 
         // 计算每行文本的高度
         val textBounds = Rect()
-        paint.getTextBounds("A", 0, 1, textBounds)
+        paint.getTextBounds("曹", 0, 1, textBounds)
         val lineHeight = (textBounds.height() + lineSpacing).toFloat()
 
         // 计算水印总高度

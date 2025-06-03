@@ -29,6 +29,8 @@ class TakePictureActivity : ComponentActivity() {
     private lateinit var btnSave: Button
     private lateinit var rgWatermarkPosition: RadioGroup
     private lateinit var btnWatermark: Button
+    private lateinit var tvTextSize: TextView
+    private lateinit var sbTextSize: SeekBar
 
     private var currentPhotoPath: String? = null
     private var originalBitmap: Bitmap? = null
@@ -68,6 +70,8 @@ class TakePictureActivity : ComponentActivity() {
         btnSave = findViewById(R.id.btnSave)
         rgWatermarkPosition = findViewById(R.id.rgWatermarkPosition)
         btnWatermark = findViewById(R.id.btnWatermark)
+        tvTextSize = findViewById(R.id.tvTextSize)
+        sbTextSize = findViewById(R.id.sbTextSize)
 
         btnTakePhoto.setOnClickListener {
             checkPermissionsAndTakePhoto()
@@ -86,7 +90,28 @@ class TakePictureActivity : ComponentActivity() {
                 addWatermarkToBitmap(it)
             }
         }
+
+        sbTextSize.progress = watermarkDrawer.getTextSize().toInt()
+        sbTextSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                watermarkDrawer.setTextSize(p1.toFloat())
+                originalBitmap?.let {
+                    addWatermarkToBitmap(it)
+                }
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+                //TODO("Not yet implemented")
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                //TODO("Not yet implemented")
+            }
+
+        })
     }
+
+    private val watermarkDrawer = WatermarkDrawer()
 
     private var watermark = ""
     override fun onResume() {
@@ -200,7 +225,6 @@ class TakePictureActivity : ComponentActivity() {
                 WatermarkPosition.BOTTOM_RIGHT
             }
         }
-        val watermarkDrawer = WatermarkDrawer()
         watermarkDrawer.drawWatermark(canvas, watermark, position)
 //        when (rgWatermarkPosition.checkedRadioButtonId) {
 //            // 左上角 - 左对齐

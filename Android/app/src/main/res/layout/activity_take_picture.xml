@@ -57,6 +57,18 @@
             android:text="右下角" />
     </RadioGroup>
 
+    <TextView
+        android:id="@+id/tvTextSize"
+        android:text="字体大小"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <SeekBar
+        android:id="@+id/sbTextSize"
+        android:max="255"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"

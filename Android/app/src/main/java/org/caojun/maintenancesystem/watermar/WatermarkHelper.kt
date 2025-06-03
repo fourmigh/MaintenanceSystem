@@ -73,7 +73,7 @@ object WatermarkHelper {
                 location?.lat.toString()
             }
             WatermarkTemplate.PLACEHOLDER_ADDRESS -> {
-                "${location?.regionName} ${location?.city}"
+                "${location?.regionName} ${location?.city} (${location?.isp})"
             }
             WatermarkTemplate.PLACEHOLDER_WEATHER -> {
                 val sb = StringBuilder()
